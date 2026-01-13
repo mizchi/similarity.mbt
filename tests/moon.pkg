@@ -1,0 +1,4 @@
+import {
+  "mizchi/similarity" as @similarity,
+  "moonbitlang/x/fs" as @fs,
+}

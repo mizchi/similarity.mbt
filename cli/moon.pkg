@@ -1,0 +1,12 @@
+import {
+  "mizchi/similarity" as @lib,
+  "mizchi/process_pool" as @pool,
+  "moonbitlang/x/fs" as @fs,
+  "moonbitlang/x/encoding" as @encoding,
+  "moonbitlang/async",
+  "moonbitlang/async/process" as @process,
+}
+
+options(
+  "is-main": true,
+)

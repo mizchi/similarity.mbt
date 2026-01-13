@@ -1,11 +1,12 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mizchi/similarity/cmd/main"
+package "mizchi/similarity/cli"
 
 // Values
 
 // Errors
 
 // Types and methods
+type Config
 
 // Type aliases
 

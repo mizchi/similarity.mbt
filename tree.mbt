@@ -4,24 +4,30 @@ pub(all) struct TreeNode {
   value : String
   mut children : Array[TreeNode]
   id : Int
+  mut cached_size : Int // -1 means not cached
 }
 
 ///|
 pub fn TreeNode::new(label : String, value : String, id : Int) -> TreeNode {
-  { label, value, children: [], id }
+  { label, value, children: [], id, cached_size: -1 }
 }
 
 ///|
 pub fn TreeNode::add_child(self : TreeNode, child : TreeNode) -> Unit {
   self.children.push(child)
+  self.cached_size = -1 // Invalidate cache
 }
 
 ///|
 pub fn TreeNode::get_subtree_size(self : TreeNode) -> Int {
+  if self.cached_size >= 0 {
+    return self.cached_size
+  }
   let mut size = 1
   for child in self.children {
     size = size + child.get_subtree_size()
   }
+  self.cached_size = size
   size
 }
 

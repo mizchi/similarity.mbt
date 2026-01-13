@@ -40,13 +40,14 @@ pub fn compute_edit_distance(
   tree2 : TreeNode,
   options : APTEDOptions,
 ) -> Double {
-  let memo : Map[String, Double] = {}
+  let memo : Map[Int64, Double] = {}
   compute_edit_distance_recursive(tree1, tree2, options, memo)
 }
 
 ///|
-fn memo_key(id1 : Int, id2 : Int) -> String {
-  "\{id1},\{id2}"
+fn memo_key(id1 : Int, id2 : Int) -> Int64 {
+  // Pack two 32-bit ints into one 64-bit int
+  (id1.to_int64() << 32) | (id2.to_int64() & 0xFFFFFFFFL)
 }
 
 ///|
@@ -54,7 +55,7 @@ fn compute_edit_distance_recursive(
   node1 : TreeNode,
   node2 : TreeNode,
   options : APTEDOptions,
-  memo : Map[String, Double],
+  memo : Map[Int64, Double],
 ) -> Double {
   let key = memo_key(node1.id, node2.id)
   match memo.get(key) {
@@ -92,7 +93,7 @@ fn compute_edit_distance_recursive(
     options.rename_cost
   }
   if not(node1.children.is_empty()) || not(node2.children.is_empty()) {
-    let child_cost_matrix : Map[String, Double] = {}
+    let child_cost_matrix : Map[Int64, Double] = {}
     for child1 in node1.children {
       for child2 in node2.children {
         let cost = compute_edit_distance_recursive(
@@ -121,7 +122,7 @@ fn compute_edit_distance_recursive(
 fn compute_children_alignment(
   children1 : Array[TreeNode],
   children2 : Array[TreeNode],
-  cost_matrix : Map[String, Double],
+  cost_matrix : Map[Int64, Double],
   options : APTEDOptions,
 ) -> Double {
   let m = children1.length()
