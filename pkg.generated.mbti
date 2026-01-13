@@ -1,0 +1,71 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/similarity"
+
+// Values
+pub fn calculate_tsed(TreeNode, TreeNode, TSEDOptions) -> Double
+
+pub fn compute_edit_distance(TreeNode, TreeNode, APTEDOptions) -> Double
+
+pub fn detect_cross_file_similarities(Array[(String, String)], DetectorOptions) -> Array[(String, String, SimilarityResult)]
+
+pub fn detect_similarities(String, DetectorOptions) -> Array[SimilarityResult]
+
+pub fn extract_functions(String) -> Array[FunctionInfo]
+
+// Errors
+
+// Types and methods
+pub(all) struct APTEDOptions {
+  rename_cost : Double
+  delete_cost : Double
+  insert_cost : Double
+  compare_values : Bool
+}
+pub fn APTEDOptions::default() -> Self
+
+pub(all) struct DetectorOptions {
+  threshold : Double
+  min_lines : Int
+  size_penalty : Bool
+}
+pub fn DetectorOptions::default() -> Self
+
+pub(all) struct FunctionInfo {
+  name : String
+  start_line : Int
+  end_line : Int
+  tree : TreeNode
+}
+pub impl Show for FunctionInfo
+
+pub(all) struct SimilarityResult {
+  func1 : FunctionInfo
+  func2 : FunctionInfo
+  similarity : Double
+  score : Double
+}
+pub impl Show for SimilarityResult
+
+pub(all) struct TSEDOptions {
+  apted_options : APTEDOptions
+  min_lines : Int
+  min_tokens : Int?
+  size_penalty : Bool
+}
+pub fn TSEDOptions::default() -> Self
+
+pub(all) struct TreeNode {
+  label : String
+  value : String
+  mut children : Array[TreeNode]
+  id : Int
+}
+pub fn TreeNode::add_child(Self, Self) -> Unit
+pub fn TreeNode::get_subtree_size(Self) -> Int
+pub fn TreeNode::new(String, String, Int) -> Self
+pub impl Show for TreeNode
+
+// Type aliases
+
+// Traits
+
