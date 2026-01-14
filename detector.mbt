@@ -35,33 +35,63 @@ pub fn DetectorOptions::default() -> DetectorOptions {
 }
 
 ///|
-pub fn detect_similarities(
-  source : String,
-  options : DetectorOptions,
-) -> Array[SimilarityResult] {
-  let functions = extract_functions(source)
-  let tsed_options = {
+fn create_tsed_options(options : DetectorOptions) -> TSEDOptions {
+  {
     apted_options: APTEDOptions::default(),
     min_lines: options.min_lines,
     min_tokens: None,
     size_penalty: options.size_penalty,
   }
+}
+
+///|
+fn compare_functions(
+  func1 : FunctionInfo,
+  func2 : FunctionInfo,
+  options : DetectorOptions,
+  tsed_options : TSEDOptions,
+) -> SimilarityResult? {
+  let lines1 = func1.end_line - func1.start_line + 1
+  let lines2 = func2.end_line - func2.start_line + 1
+  if lines1 < options.min_lines || lines2 < options.min_lines {
+    return None
+  }
+  // Early pruning: skip if tree sizes are too different
+  let size1 = func1.tree.get_subtree_size()
+  let size2 = func2.tree.get_subtree_size()
+  let size_ratio = if size1 > size2 {
+    size2.to_double() / size1.to_double()
+  } else {
+    size1.to_double() / size2.to_double()
+  }
+  // If size ratio is below threshold, similarity will be low
+  if size_ratio < options.threshold * 0.5 {
+    return None
+  }
+  let similarity = calculate_tsed(func1.tree, func2.tree, tsed_options)
+  if similarity >= options.threshold {
+    let avg_lines = (lines1 + lines2) / 2
+    let score = similarity * avg_lines.to_double()
+    Some({ func1, func2, similarity, score })
+  } else {
+    None
+  }
+}
+
+///|
+pub fn detect_similarities(
+  source : String,
+  options : DetectorOptions,
+) -> Array[SimilarityResult] {
+  let functions = extract_functions(source)
+  let tsed_options = create_tsed_options(options)
   let results : Array[SimilarityResult] = []
   let n = functions.length()
   for i = 0; i < n; i = i + 1 {
     for j = i + 1; j < n; j = j + 1 {
-      let func1 = functions[i]
-      let func2 = functions[j]
-      let lines1 = func1.end_line - func1.start_line + 1
-      let lines2 = func2.end_line - func2.start_line + 1
-      if lines1 < options.min_lines || lines2 < options.min_lines {
-        continue
-      }
-      let similarity = calculate_tsed(func1.tree, func2.tree, tsed_options)
-      if similarity >= options.threshold {
-        let avg_lines = (lines1 + lines2) / 2
-        let score = similarity * avg_lines.to_double()
-        results.push({ func1, func2, similarity, score })
+      match compare_functions(functions[i], functions[j], options, tsed_options) {
+        Some(result) => results.push(result)
+        None => ()
       }
     }
   }
@@ -82,28 +112,16 @@ pub fn detect_cross_file_similarities(
       all_functions.push((filename, func))
     }
   }
-  let tsed_options = {
-    apted_options: APTEDOptions::default(),
-    min_lines: options.min_lines,
-    min_tokens: None,
-    size_penalty: options.size_penalty,
-  }
+  let tsed_options = create_tsed_options(options)
   let results : Array[(String, String, SimilarityResult)] = []
   let n = all_functions.length()
   for i = 0; i < n; i = i + 1 {
     for j = i + 1; j < n; j = j + 1 {
       let (file1, func1) = all_functions[i]
       let (file2, func2) = all_functions[j]
-      let lines1 = func1.end_line - func1.start_line + 1
-      let lines2 = func2.end_line - func2.start_line + 1
-      if lines1 < options.min_lines || lines2 < options.min_lines {
-        continue
-      }
-      let similarity = calculate_tsed(func1.tree, func2.tree, tsed_options)
-      if similarity >= options.threshold {
-        let avg_lines = (lines1 + lines2) / 2
-        let score = similarity * avg_lines.to_double()
-        results.push((file1, file2, { func1, func2, similarity, score }))
+      match compare_functions(func1, func2, options, tsed_options) {
+        Some(result) => results.push((file1, file2, result))
+        None => ()
       }
     }
   }

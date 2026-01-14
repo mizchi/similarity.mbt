@@ -16,23 +16,6 @@ pub fn APTEDOptions::default() -> APTEDOptions {
   }
 }
 
-///|
-fn min_double(a : Double, b : Double) -> Double {
-  if a < b {
-    a
-  } else {
-    b
-  }
-}
-
-///|
-fn max_double(a : Double, b : Double) -> Double {
-  if a > b {
-    a
-  } else {
-    b
-  }
-}
 
 ///|
 pub fn compute_edit_distance(
@@ -93,25 +76,22 @@ fn compute_edit_distance_recursive(
     options.rename_cost
   }
   if not(node1.children.is_empty()) || not(node2.children.is_empty()) {
-    let child_cost_matrix : Map[Int64, Double] = {}
+    // Pre-compute child distances into memo
     for child1 in node1.children {
       for child2 in node2.children {
-        let cost = compute_edit_distance_recursive(
-          child1, child2, options, memo,
-        )
-        child_cost_matrix.set(memo_key(child1.id, child2.id), cost)
+        ignore(compute_edit_distance_recursive(child1, child2, options, memo))
       }
     }
     let alignment_cost = compute_children_alignment(
       node1.children,
       node2.children,
-      child_cost_matrix,
+      memo,
       options,
     )
     rename_plus_cost = rename_plus_cost + alignment_cost
   }
-  let min_cost = min_double(
-    min_double(delete_all_cost, insert_all_cost),
+  let min_cost = @cmp.minimum(
+    @cmp.minimum(delete_all_cost, insert_all_cost),
     rename_plus_cost,
   )
   memo.set(key, min_cost)
@@ -122,36 +102,36 @@ fn compute_edit_distance_recursive(
 fn compute_children_alignment(
   children1 : Array[TreeNode],
   children2 : Array[TreeNode],
-  cost_matrix : Map[Int64, Double],
+  memo : Map[Int64, Double],
   options : APTEDOptions,
 ) -> Double {
   let m = children1.length()
   let n = children2.length()
-  let dp : Array[Array[Double]] = Array::makei(m + 1, fn(_) {
-    Array::make(n + 1, 0.0)
-  })
-  for i = 1; i <= m; i = i + 1 {
-    dp[i][0] = dp[i - 1][0] +
-      options.delete_cost * children1[i - 1].get_subtree_size().to_double()
-  }
+  // Use 1D array optimization: only need current and previous row
+  let mut prev : Array[Double] = Array::make(n + 1, 0.0)
+  let mut curr : Array[Double] = Array::make(n + 1, 0.0)
+  // Initialize first row
   for j = 1; j <= n; j = j + 1 {
-    dp[0][j] = dp[0][j - 1] +
+    prev[j] = prev[j - 1] +
       options.insert_cost * children2[j - 1].get_subtree_size().to_double()
   }
   for i = 1; i <= m; i = i + 1 {
+    let child1 = children1[i - 1]
+    let child1_size = child1.get_subtree_size().to_double()
+    curr[0] = prev[0] + options.delete_cost * child1_size
     for j = 1; j <= n; j = j + 1 {
-      let child1 = children1[i - 1]
       let child2 = children2[j - 1]
-      let edit_cost = cost_matrix
-        .get(memo_key(child1.id, child2.id))
-        .unwrap_or(0.0)
-      let delete_cost = dp[i - 1][j] +
-        options.delete_cost * child1.get_subtree_size().to_double()
-      let insert_cost = dp[i][j - 1] +
+      let edit_cost = memo.get(memo_key(child1.id, child2.id)).unwrap_or(0.0)
+      let delete_cost = prev[j] + options.delete_cost * child1_size
+      let insert_cost = curr[j - 1] +
         options.insert_cost * child2.get_subtree_size().to_double()
-      let match_cost = dp[i - 1][j - 1] + edit_cost
-      dp[i][j] = min_double(min_double(delete_cost, insert_cost), match_cost)
+      let match_cost = prev[j - 1] + edit_cost
+      curr[j] = @cmp.minimum(@cmp.minimum(delete_cost, insert_cost), match_cost)
     }
+    // Swap rows
+    let tmp = prev
+    prev = curr
+    curr = tmp
   }
-  dp[m][n]
+  prev[n]
 }

@@ -25,14 +25,14 @@ pub fn calculate_tsed(
   let distance = compute_edit_distance(tree1, tree2, options.apted_options)
   let size1 = tree1.get_subtree_size().to_double()
   let size2 = tree2.get_subtree_size().to_double()
-  let max_size = max_double(size1, size2)
+  let max_size = @cmp.maximum(size1, size2)
   let mut tsed_similarity = if max_size > 0.0 {
-    max_double(1.0 - distance / max_size, 0.0)
+    @cmp.maximum(1.0 - distance / max_size, 0.0)
   } else {
     1.0
   }
   if distance == 0.0 && size1 != size2 {
-    let size_ratio = min_double(size1, size2) / max_double(size1, size2)
+    let size_ratio = @cmp.minimum(size1, size2) / @cmp.maximum(size1, size2)
     let size_diff = (size1 - size2).abs()
     tsed_similarity = if size_diff > 10.0 {
       tsed_similarity * 0.5
@@ -50,9 +50,9 @@ pub fn calculate_tsed(
     }
   }
   let mut similarity = tsed_similarity
-  let size_ratio = min_double(size1, size2) / max_double(size1, size2)
+  let size_ratio = @cmp.minimum(size1, size2) / @cmp.maximum(size1, size2)
   if options.size_penalty {
-    let min_size = min_double(size1, size2)
+    let min_size = @cmp.minimum(size1, size2)
     if min_size < 30.0 {
       let short_function_factor = (min_size / 30.0).sqrt()
       similarity = similarity * short_function_factor
