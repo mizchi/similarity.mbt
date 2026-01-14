@@ -83,8 +83,8 @@ fn compute_edit_distance_recursive(
       }
     }
     let alignment_cost = compute_children_alignment(
-      node1.children,
-      node2.children,
+      node1.children[:],
+      node2.children[:],
       memo,
       options,
     )
@@ -100,8 +100,8 @@ fn compute_edit_distance_recursive(
 
 ///|
 fn compute_children_alignment(
-  children1 : Array[TreeNode],
-  children2 : Array[TreeNode],
+  children1 : ArrayView[TreeNode],
+  children2 : ArrayView[TreeNode],
   memo : Map[Int64, Double],
   options : APTEDOptions,
 ) -> Double {
@@ -110,23 +110,24 @@ fn compute_children_alignment(
   // Use 1D array optimization: only need current and previous row
   let mut prev : Array[Double] = Array::make(n + 1, 0.0)
   let mut curr : Array[Double] = Array::make(n + 1, 0.0)
+  let insert_cost = options.insert_cost
+  let delete_cost = options.delete_cost
   // Initialize first row
   for j = 1; j <= n; j = j + 1 {
     prev[j] = prev[j - 1] +
-      options.insert_cost * children2[j - 1].get_subtree_size().to_double()
+      insert_cost * children2[j - 1].get_subtree_size().to_double()
   }
   for i = 1; i <= m; i = i + 1 {
     let child1 = children1[i - 1]
     let child1_size = child1.get_subtree_size().to_double()
-    curr[0] = prev[0] + options.delete_cost * child1_size
+    curr[0] = prev[0] + delete_cost * child1_size
     for j = 1; j <= n; j = j + 1 {
       let child2 = children2[j - 1]
-      let edit_cost = memo.get(memo_key(child1.id, child2.id)).unwrap_or(0.0)
-      let delete_cost = prev[j] + options.delete_cost * child1_size
-      let insert_cost = curr[j - 1] +
-        options.insert_cost * child2.get_subtree_size().to_double()
-      let match_cost = prev[j - 1] + edit_cost
-      curr[j] = @cmp.minimum(@cmp.minimum(delete_cost, insert_cost), match_cost)
+      let edit = memo.get(memo_key(child1.id, child2.id)).unwrap_or(0.0)
+      let del = prev[j] + delete_cost * child1_size
+      let ins = curr[j - 1] +
+        insert_cost * child2.get_subtree_size().to_double()
+      curr[j] = @cmp.minimum(@cmp.minimum(del, ins), prev[j - 1] + edit)
     }
     // Swap rows
     let tmp = prev
