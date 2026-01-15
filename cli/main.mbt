@@ -30,10 +30,9 @@ struct Config {
 ///|
 /// Use git ls-files to get tracked .mbt files (respects .gitignore)
 async fn find_mbt_files_git(result : Array[String]) -> Bool {
-  let (exit_code, stdout, _stderr) = @process.collect_output(
-    "git",
-    ["ls-files", "*.mbt", "**/*.mbt"],
-  )
+  let (exit_code, stdout, _stderr) = @process.collect_output("git", [
+    "ls-files", "*.mbt", "**/*.mbt",
+  ])
   if exit_code != 0 {
     return false
   }
@@ -49,6 +48,25 @@ async fn find_mbt_files_git(result : Array[String]) -> Bool {
     }
   }
   true
+}
+
+///|
+/// Run worker process and collect output
+async fn run_worker(
+  self_path : String,
+  file1 : String,
+  file2 : String,
+  threshold_str : String,
+) -> (Int, String, String) {
+  let (exit_code, stdout, stderr) = @process.collect_output(self_path, [
+    "--internal-worker", file1, file2, threshold_str,
+  ])
+  let decoder = @encoding.decoder(UTF8)
+  (
+    exit_code,
+    decoder.decode_lossy(stdout.binary()),
+    decoder.decode_lossy(stderr.binary()),
+  )
 }
 
 ///|
@@ -143,7 +161,13 @@ fn parse_args() -> Config? {
     }
     filtered_files.push(file)
   }
-  Some(Config::{ threshold, workers, min_lines, files: filtered_files, no_tests })
+  Some(Config::{
+    threshold,
+    workers,
+    min_lines,
+    files: filtered_files,
+    no_tests,
+  })
 }
 
 ///|
@@ -294,23 +318,37 @@ async fn analyze_multiple_files(config : Config) -> Unit {
     "Comparing \{pairs.length()} file pairs (\{files.length()} files) using \{config.workers} workers...",
   )
   println("")
-  let pool = @pool.ProcessPool::new(max_workers=config.workers)
-  let start = @pool.now()
+  let semaphore = @async.Semaphore::new(config.workers)
+  let start = @async.now()
   let threshold_str = config.threshold.to_string()
 
-  // Spawn self as worker with --internal-worker flag
-  let results = pool.map(pairs, fn(pair) {
-    let (file1, file2) = pair
-    @pool.job(self_path, ["--internal-worker", file1, file2, threshold_str])
+  // Run workers in parallel with semaphore limiting concurrency
+  let results : Array[(Int, String, String)] = @async.with_task_group(fn(
+    group,
+  ) {
+    let tasks = pairs.map(fn(pair) {
+      let (file1, file2) = pair
+      group.spawn(fn() {
+        semaphore.acquire()
+        defer semaphore.release()
+        run_worker(self_path, file1, file2, threshold_str)
+      })
+    })
+    let results : Array[(Int, String, String)] = []
+    for task in tasks {
+      results.push(task.wait())
+    }
+    results
   })
-  let elapsed = @pool.now() - start
+  let elapsed = @async.now() - start
 
   // Collect and print results
   let mut total_matches = 0
   let mut errors = 0
   for result in results {
-    if result.exit_code == 0 {
-      let output = result.stdout.trim().to_string()
+    let (exit_code, stdout, stderr) = result
+    if exit_code == 0 {
+      let output = stdout.trim().to_string()
       if output != "NO_MATCHES" && output.length() > 0 {
         println(output)
         // Count matches
@@ -323,8 +361,8 @@ async fn analyze_multiple_files(config : Config) -> Unit {
       }
     } else {
       errors = errors + 1
-      if result.stderr.length() > 0 {
-        println("Error: \{result.stderr}")
+      if stderr.length() > 0 {
+        println("Error: \{stderr}")
       }
     }
   }

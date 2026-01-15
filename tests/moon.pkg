@@ -1,4 +1,1 @@
-import {
-  "mizchi/similarity" as @similarity,
-  "moonbitlang/x/fs" as @fs,
-}
+import { "mizchi/similarity" as @similarity, "moonbitlang/x/fs" as @fs }

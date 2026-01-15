@@ -12,7 +12,9 @@ fn parse_expectation(source : String) -> (Bool, Double) {
         let parts = line_str.split(">=").collect()
         if parts.length() > 1 {
           let threshold_str = parts[1].to_string().trim()
-          let threshold = @strconv.parse_double(threshold_str) catch { _ => 0.8 }
+          let threshold = @strconv.parse_double(threshold_str) catch {
+            _ => 0.8
+          }
           return (true, threshold) // expect_similar=true
         }
       } else if line_str.contains("no match") {
@@ -20,7 +22,9 @@ fn parse_expectation(source : String) -> (Bool, Double) {
         let parts = line_str.split("threshold").collect()
         if parts.length() > 1 {
           let threshold_str = parts[1].to_string().trim()
-          let threshold = @strconv.parse_double(threshold_str) catch { _ => 0.85 }
+          let threshold = @strconv.parse_double(threshold_str) catch {
+            _ => 0.85
+          }
           return (false, threshold) // expect_similar=false
         }
         return (false, 0.85)
@@ -35,7 +39,7 @@ fn parse_expectation(source : String) -> (Bool, Double) {
 fn run_fixture_test(
   filepath : String,
   expect_similar : Bool,
-  threshold : Double
+  threshold : Double,
 ) -> Result[Unit, String] {
   let source = @fs.read_file_to_string(filepath) catch {
     e => return Err("Failed to read \{filepath}: \{e}")

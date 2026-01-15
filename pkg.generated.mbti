@@ -59,6 +59,7 @@ pub(all) struct TreeNode {
   value : String
   mut children : Array[TreeNode]
   id : Int
+  mut cached_size : Int
 }
 pub fn TreeNode::add_child(Self, Self) -> Unit
 pub fn TreeNode::get_subtree_size(Self) -> Int

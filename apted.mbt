@@ -16,7 +16,6 @@ pub fn APTEDOptions::default() -> APTEDOptions {
   }
 }
 
-
 ///|
 pub fn compute_edit_distance(
   tree1 : TreeNode,

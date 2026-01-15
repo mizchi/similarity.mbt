@@ -83,20 +83,15 @@ pub fn detect_similarities(
   source : String,
   options : DetectorOptions,
 ) -> Array[SimilarityResult] {
-  let functions = extract_functions(source)
-  let tsed_options = create_tsed_options(options)
-  let results : Array[SimilarityResult] = []
-  let n = functions.length()
-  for i = 0; i < n; i = i + 1 {
-    for j = i + 1; j < n; j = j + 1 {
-      match compare_functions(functions[i], functions[j], options, tsed_options) {
-        Some(result) => results.push(result)
-        None => ()
-      }
-    }
-  }
-  results.sort_by(fn(a, b) { b.score.compare(a.score) })
-  results
+  // Delegate to cross-file detection with single file
+  let cross_results = detect_cross_file_similarities(
+    [("<single>", source)],
+    options,
+  )
+  cross_results.map(fn(r) {
+    let (_, _, result) = r
+    result
+  })
 }
 
 ///|
