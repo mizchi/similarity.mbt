@@ -4,7 +4,7 @@
 /// Usage: similarity-mbt [OPTIONS] [files...]
 ///
 /// Options:
-///   -t <value>   Similarity threshold (0.0-1.0, default: 0.8)
+///   -t <value>   Similarity threshold (0.0-1.0, default: 0.88)
 ///   -w <count>   Number of parallel workers (default: 4)
 ///   -m <lines>   Minimum function lines (default: 3)
 ///   -h           Show help
@@ -115,7 +115,7 @@ fn should_ignore_path(path : String) -> Bool {
 ///|
 fn parse_args() -> Config? {
   let args = @env.args()
-  let mut threshold = 0.8
+  let mut threshold = 0.88
   let mut workers = 4
   let mut min_lines = 3
   let mut no_tests = false
@@ -208,7 +208,7 @@ fn print_help() -> Unit {
   println("  files        MoonBit source files (default: **/*.mbt)")
   println("")
   println("Options:")
-  println("  -t <value>   Similarity threshold (0.0-1.0, default: 0.8)")
+  println("  -t <value>   Similarity threshold (0.0-1.0, default: 0.88)")
   println("  -w <count>   Number of parallel workers (default: 4)")
   println("  -m <lines>   Minimum function lines (default: 3)")
   println("  --no-tests   Exclude test files (*_test.mbt, *_wbtest.mbt)")

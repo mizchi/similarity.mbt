@@ -9,7 +9,7 @@ pub(all) struct APTEDOptions {
 ///|
 pub fn APTEDOptions::default() -> APTEDOptions {
   {
-    rename_cost: 0.3,
+    rename_cost: 1.0,
     delete_cost: 1.0,
     insert_cost: 1.0,
     compare_values: false,
@@ -70,7 +70,13 @@ fn compute_edit_distance_recursive(
       options.rename_cost
     }
   } else if node1.label == node2.label {
-    0.0
+    // Penalize different number of children (structural difference)
+    let children_diff = (node1.children.length() - node2.children.length()).abs()
+    if children_diff > 0 {
+      options.rename_cost * children_diff.to_double()
+    } else {
+      0.0
+    }
   } else {
     options.rename_cost
   }

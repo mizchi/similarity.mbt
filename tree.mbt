@@ -1,6 +1,6 @@
 ///|
 pub(all) struct TreeNode {
-  label : String
+  mut label : String
   value : String
   mut children : Array[TreeNode]
   id : Int
@@ -40,4 +40,17 @@ pub impl Show for TreeNode with output(self, logger) {
   logger.write_string(", children=")
   logger.write_string(self.children.length().to_string())
   logger.write_string(")")
+}
+
+///|
+/// Add children count to labels for better structural comparison
+/// e.g., "For" -> "For_3" if the node has 3 children
+pub fn TreeNode::finalize_labels(self : TreeNode) -> Unit {
+  let n = self.children.length()
+  if n > 0 {
+    self.label = "\{self.label}_\{n}"
+    for child in self.children {
+      child.finalize_labels()
+    }
+  }
 }

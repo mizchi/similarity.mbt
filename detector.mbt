@@ -31,7 +31,7 @@ pub(all) struct DetectorOptions {
 
 ///|
 pub fn DetectorOptions::default() -> DetectorOptions {
-  { threshold: 0.85, min_lines: 3, size_penalty: true }
+  { threshold: 0.88, min_lines: 3, size_penalty: true }
 }
 
 ///|

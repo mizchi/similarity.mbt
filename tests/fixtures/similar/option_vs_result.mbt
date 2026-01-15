@@ -1,5 +1,6 @@
-// Different: Option handling vs Result handling
-// Expected: no match at threshold 0.85
+// Similar: Option handling vs Result handling
+// Note: Structurally identical (match with 2 cases, same operations)
+// Expected: similarity >= 0.95
 
 ///|
 fn process_option(opt : Int?) -> Int {

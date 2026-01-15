@@ -25,46 +25,40 @@ pub fn calculate_tsed(
   let distance = compute_edit_distance(tree1, tree2, options.apted_options)
   let size1 = tree1.get_subtree_size().to_double()
   let size2 = tree2.get_subtree_size().to_double()
-  let max_size = @cmp.maximum(size1, size2)
-  let mut tsed_similarity = if max_size > 0.0 {
-    @cmp.maximum(1.0 - distance / max_size, 0.0)
+  let total_size = size1 + size2
+  let tsed_similarity = if total_size > 0.0 {
+    @cmp.maximum(1.0 - 2.0 * distance / total_size, 0.0)
   } else {
     1.0
   }
-  if distance == 0.0 && size1 != size2 {
-    let size_ratio = @cmp.minimum(size1, size2) / @cmp.maximum(size1, size2)
-    let size_diff = (size1 - size2).abs()
-    tsed_similarity = if size_diff > 10.0 {
-      tsed_similarity * 0.5
-    } else if size_ratio < 0.95 || size_diff > 3.0 {
-      tsed_similarity * size_ratio.sqrt()
-    } else {
-      tsed_similarity
-    }
-  }
-  if options.size_penalty {
-    if max_size < 10.0 && distance > 0.0 {
-      tsed_similarity = tsed_similarity * 0.8
-    } else if max_size < 30.0 && distance > 0.0 {
-      tsed_similarity = tsed_similarity * 0.9
-    }
-  }
   let mut similarity = tsed_similarity
-  let size_ratio = @cmp.minimum(size1, size2) / @cmp.maximum(size1, size2)
-  if options.size_penalty {
-    let min_size = @cmp.minimum(size1, size2)
-    if min_size < 30.0 {
-      let short_function_factor = (min_size / 30.0).sqrt()
-      similarity = similarity * short_function_factor
-      if min_size < 10.0 {
-        similarity = similarity * 0.5
-      } else if min_size < 20.0 {
-        similarity = similarity * 0.7
-      }
+  let min_size = @cmp.minimum(size1, size2)
+  let max_size = @cmp.maximum(size1, size2)
+  let size_ratio = min_size / max_size
+
+  if options.size_penalty && distance > 0.0 {
+    // Only apply penalty when there are structural differences (distance > 0)
+    // distance=0 means structurally identical - no penalty needed
+
+    // Penalty for very small functions (high false positive risk)
+    if min_size < 10.0 {
+      similarity = similarity * 0.7
     }
+
+    // Penalty for large functions with structural differences
+    // Large functions sharing common patterns should be penalized
+    if max_size > 50.0 {
+      let distance_ratio = distance / max_size
+      // More distance = more penalty for large functions
+      let large_func_penalty = 1.0 - distance_ratio * 0.3
+      similarity = similarity * large_func_penalty
+    }
+
+    // Penalty for significant size mismatch
     if size_ratio < 0.5 {
       similarity = similarity * size_ratio.sqrt()
     }
   }
+
   similarity
 }

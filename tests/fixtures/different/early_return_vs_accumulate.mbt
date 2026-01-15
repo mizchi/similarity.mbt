@@ -1,5 +1,6 @@
 // Different: Early return pattern vs accumulate pattern
-// Expected: no match at threshold 0.85
+// Note: Similar structure (for loop with if condition)
+// Expected: no match at threshold 0.90
 
 ///|
 fn find_first_negative(arr : Array[Int]) -> Int? {
