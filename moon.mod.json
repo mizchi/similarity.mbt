@@ -1,15 +1,15 @@
 {
   "name": "mizchi/similarity",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "deps": {
     "moonbitlang/parser": "0.1.13",
     "moonbitlang/x": "0.4.9",
     "moonbitlang/async": "0.16.1"
   },
   "readme": "README.mbt.md",
-  "repository": "",
+  "repository": "https://github.com/mizchi/similarity.mbt",
   "license": "Apache-2.0",
   "keywords": [],
-  "description": "",
+  "description": "AST similarity caliculator by APTED / Tree Edit Distance",
   "preferred-target": "native"
 }
