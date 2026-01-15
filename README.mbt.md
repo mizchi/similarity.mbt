@@ -11,6 +11,18 @@ Code similarity detection for MoonBit using AST-based comparison (TSED - Tree St
 
 ## Installation
 
+### CLI Tool
+
+```bash
+git clone https://github.com/mizchi/similarity.mbt
+cd similarity.mbt
+make install  # Installs to ~/.local/bin/similarity-mbt
+```
+
+Make sure `~/.local/bin` is in your `PATH`.
+
+### As a Library
+
 Add to your `moon.mod.json`:
 
 ```json
@@ -23,7 +35,26 @@ Add to your `moon.mod.json`:
 
 ## Usage
 
-### Basic similarity detection
+### CLI
+
+```bash
+# Scan all .mbt files in current directory
+similarity-mbt
+
+# Scan specific files
+similarity-mbt src/*.mbt
+
+# Adjust threshold (default: 0.88)
+similarity-mbt -t 0.95 *.mbt
+
+# Exclude test files
+similarity-mbt --no-tests
+
+# Show help
+similarity-mbt -h
+```
+
+### Basic similarity detection (Library)
 
 ```moonbit
 let source = 
