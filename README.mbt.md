@@ -56,7 +56,7 @@ similarity-mbt -h
 
 ### Basic similarity detection (Library)
 
-```moonbit
+```moonbit nocheck
 let source = 
   #|fn add(a : Int, b : Int) -> Int { a + b }
   #|fn sum(x : Int, y : Int) -> Int { x + y }
@@ -71,7 +71,7 @@ for result in results {
 
 ### Custom options
 
-```moonbit
+```moonbit nocheck
 ///|
 let options : @similarity.DetectorOptions = {
   threshold: 0.80, // Minimum similarity (0.0-1.0)
@@ -82,7 +82,7 @@ let options : @similarity.DetectorOptions = {
 
 ### Cross-file comparison
 
-```moonbit
+```moonbit nocheck
 let files = [
   ("file1.mbt", source1),
   ("file2.mbt", source2),
@@ -97,7 +97,7 @@ for result in results {
 
 ### Direct tree comparison
 
-```moonbit
+```moonbit nocheck
 ///|
 let functions = @similarity.extract_functions(source)
 

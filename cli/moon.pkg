@@ -1,9 +1,9 @@
 import {
-  "mizchi/similarity" as @lib,
-  "moonbitlang/x/fs" as @fs,
-  "moonbitlang/x/encoding" as @encoding,
+  "mizchi/similarity" @lib,
+  "moonbitlang/x/fs" @fs,
+  "moonbitlang/x/encoding" @encoding,
   "moonbitlang/async",
-  "moonbitlang/async/process" as @process,
+  "moonbitlang/async/process" @process,
 }
 
 options(

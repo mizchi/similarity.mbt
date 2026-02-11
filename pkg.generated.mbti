@@ -55,13 +55,14 @@ pub(all) struct TSEDOptions {
 pub fn TSEDOptions::default() -> Self
 
 pub(all) struct TreeNode {
-  label : String
+  mut label : String
   value : String
   mut children : Array[TreeNode]
   id : Int
   mut cached_size : Int
 }
 pub fn TreeNode::add_child(Self, Self) -> Unit
+pub fn TreeNode::finalize_labels(Self) -> Unit
 pub fn TreeNode::get_subtree_size(Self) -> Int
 pub fn TreeNode::new(String, String, Int) -> Self
 pub impl Show for TreeNode

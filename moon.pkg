@@ -1,1 +1,6 @@
-import { "moonbitlang/parser", "moonbitlang/parser/syntax" }
+import {
+  "moonbitlang/core/bench",
+  "moonbitlang/core/cmp",
+  "moonbitlang/parser",
+  "moonbitlang/parser/syntax",
+}

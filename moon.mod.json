@@ -2,9 +2,9 @@
   "name": "mizchi/similarity",
   "version": "0.1.1",
   "deps": {
-    "moonbitlang/parser": "0.1.13",
-    "moonbitlang/x": "0.4.9",
-    "moonbitlang/async": "0.16.1"
+    "moonbitlang/parser": "0.1.15",
+    "moonbitlang/x": "0.4.40",
+    "moonbitlang/async": "0.16.6"
   },
   "readme": "README.mbt.md",
   "repository": "https://github.com/mizchi/similarity.mbt",

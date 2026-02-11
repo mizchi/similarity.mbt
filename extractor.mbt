@@ -83,6 +83,7 @@ pub fn extract_functions(source : String) -> Array[FunctionInfo] {
 ///|
 fn decl_body_to_tree(body : @syntax.DeclBody, id_gen : IdGenerator) -> TreeNode {
   match body {
+    DeclNone => TreeNode::new("DeclNone", "", id_gen.next())
     DeclBody(expr~, ..) => expr_to_tree(expr, id_gen)
     DeclStubs(stubs) =>
       match stubs {
