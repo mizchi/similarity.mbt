@@ -378,7 +378,7 @@ async fn analyze_multiple_files(config : Config) -> Unit {
 }
 
 ///|
-async fn main {
+pub async fn run_cli() -> Unit {
   let args = @env.args()
 
   // Check for internal worker mode
@@ -410,4 +410,9 @@ async fn main {
       }
     }
   }
+}
+
+///|
+async fn main {
+  run_cli()
 }

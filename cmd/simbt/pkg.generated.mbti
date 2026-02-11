@@ -1,13 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mizchi/similarity/cli"
+package "mizchi/similarity/cmd/simbt"
 
 // Values
-pub async fn run_cli() -> Unit
 
 // Errors
 
 // Types and methods
-type Config
 
 // Type aliases
 

@@ -1,6 +1,6 @@
 {
   "name": "mizchi/similarity",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "deps": {
     "moonbitlang/parser": "0.1.15",
     "moonbitlang/x": "0.4.40",
