@@ -1,0 +1,13 @@
+import {
+  "mizchi/similarity" @similarity,
+  "moonbitlang/x/fs" @fs,
+}
+
+options(
+  "is-main": true,
+  link: {
+    "wasm": { "exports": [ "run" ] },
+    "wasm-gc": { "exports": [ "run" ] },
+  },
+  "supported-targets": [ "wasm", "wasm-gc" ],
+)
