@@ -1,4 +1,9 @@
 import {
+}
+
+import {
+  "moonbitlang/core/debug" @debug,
+  "moonbitlang/core/string" @string,
   "mizchi/similarity" @similarity,
   "moonbitlang/x/fs" @fs,
-}
+} for "test"

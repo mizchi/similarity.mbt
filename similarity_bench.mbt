@@ -75,7 +75,7 @@ test "bench detect_similarities" (b : @bench.T) {
 ///|
 test "bench compute_edit_distance" (b : @bench.T) {
   let functions = extract_functions(sample_source)
-  guard functions.length() >= 2
+  guard! functions.length() >= 2
   let tree1 = functions[0].tree
   let tree2 = functions[1].tree
   let options = APTEDOptions::default()
@@ -85,7 +85,7 @@ test "bench compute_edit_distance" (b : @bench.T) {
 ///|
 test "bench calculate_tsed" (b : @bench.T) {
   let functions = extract_functions(sample_source)
-  guard functions.length() >= 2
+  guard! functions.length() >= 2
   let tree1 = functions[0].tree
   let tree2 = functions[1].tree
   let options : TSEDOptions = {
@@ -100,7 +100,7 @@ test "bench calculate_tsed" (b : @bench.T) {
 ///|
 test "bench get_subtree_size" (b : @bench.T) {
   let functions = extract_functions(sample_source)
-  guard functions.length() >= 1
+  guard! functions.length() >= 1
   let tree = functions[0].tree
   b.bench(fn() { b.keep(tree.get_subtree_size()) })
 }
