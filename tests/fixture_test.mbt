@@ -5,14 +5,14 @@ fn parse_expectation(source : String) -> (Bool, Double) {
   // Default: expect similar at 0.8
   let lines = source.split("\n").collect()
   for line in lines {
-    let line_str = line.to_string()
+    let line_str = line.to_owned()
     if line_str.contains("// Expected:") {
       if line_str.contains("similarity >=") {
         // Extract threshold after ">="
         let parts = line_str.split(">=").collect()
         if parts.length() > 1 {
-          let threshold_str = parts[1].to_string().trim()
-          let threshold = @strconv.parse_double(threshold_str) catch {
+          let threshold_str = parts[1].to_owned().trim()
+          let threshold = @string.parse_double(threshold_str) catch {
             _ => 0.8
           }
           return (true, threshold) // expect_similar=true
@@ -21,8 +21,8 @@ fn parse_expectation(source : String) -> (Bool, Double) {
         // Parse "no match at threshold X.XX"
         let parts = line_str.split("threshold").collect()
         if parts.length() > 1 {
-          let threshold_str = parts[1].to_string().trim()
-          let threshold = @strconv.parse_double(threshold_str) catch {
+          let threshold_str = parts[1].to_owned().trim()
+          let threshold = @string.parse_double(threshold_str) catch {
             _ => 0.85
           }
           return (false, threshold) // expect_similar=false
@@ -42,14 +42,14 @@ fn run_fixture_test(
   threshold : Double,
 ) -> Result[Unit, String] {
   let source = @fs.read_file_to_string(filepath) catch {
-    e => return Err("Failed to read \{filepath}: \{e}")
+    e => return Err("Failed to read \{filepath}: \{@debug.to_string(e)}")
   }
   // For "similar" tests, disable size_penalty to detect similar patterns
   // For "different" tests, enable size_penalty to avoid false positives
   let options : @similarity.DetectorOptions = {
     threshold,
     min_lines: 3,
-    size_penalty: not(expect_similar),
+    size_penalty: !(expect_similar),
   }
   let results = @similarity.detect_similarities(source, options)
   if expect_similar {
@@ -100,7 +100,7 @@ test "fixtures/similar - should detect similarities" {
       }
     }
   }
-  if not(all_passed) {
+  if !(all_passed) {
     for err in errors {
       println(err)
     }
@@ -125,7 +125,7 @@ test "fixtures/different - should not detect false positives" {
       }
     }
   }
-  if not(all_passed) {
+  if !(all_passed) {
     for err in errors {
       println(err)
     }

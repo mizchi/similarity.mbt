@@ -41,7 +41,7 @@ pub fn extract_functions(source : String) -> Array[FunctionInfo] {
   let id_gen = IdGenerator::new()
   for impl_ in impls {
     match impl_ {
-      TopFuncDef(fun_decl~, decl_body~, loc~) => {
+      TopFuncDef(fun_decl~, decl_body~, loc~, ..) => {
         let name = fun_decl.name.name
         let tree = decl_body_to_tree(decl_body, id_gen)
         functions.push({
@@ -84,7 +84,7 @@ pub fn extract_functions(source : String) -> Array[FunctionInfo] {
 fn decl_body_to_tree(body : @syntax.DeclBody, id_gen : IdGenerator) -> TreeNode {
   match body {
     DeclNone => TreeNode::new("DeclNone", "", id_gen.next())
-    DeclBody(expr~, ..) => expr_to_tree(expr, id_gen)
+    DeclBody(expr~) => expr_to_tree(expr, id_gen)
     DeclStubs(stubs) =>
       match stubs {
         Import(module_name~, func_name~, ..) => {
@@ -202,6 +202,7 @@ fn expr_to_tree(expr : @syntax.Expr, id_gen : IdGenerator) -> TreeNode {
         Double(_) => "Double"
         String(_) => "String"
         BigInt(_) => "BigInt"
+        Regex(_) => "Regex"
       }
       TreeNode::new("Constant", label, id_gen.next())
     }
@@ -270,8 +271,8 @@ fn expr_to_tree(expr : @syntax.Expr, id_gen : IdGenerator) -> TreeNode {
       node.add_child(expr_to_tree(expr, id_gen))
       node
     }
-    IsLexMatch(expr~, ..) => {
-      let node = TreeNode::new("IsLexMatch", "", id_gen.next())
+    RegexMatch(expr~, ..) => {
+      let node = TreeNode::new("RegexMatch", "", id_gen.next())
       node.add_child(expr_to_tree(expr, id_gen))
       node
     }
@@ -284,15 +285,6 @@ fn expr_to_tree(expr : @syntax.Expr, id_gen : IdGenerator) -> TreeNode {
     LetFn(func~, body~, ..) => {
       let node = TreeNode::new("LetFn", "", id_gen.next())
       node.add_child(expr_to_tree(func.body, id_gen))
-      node.add_child(expr_to_tree(body, id_gen))
-      node
-    }
-    LetRec(bindings~, body~, ..) => {
-      let node = TreeNode::new("LetRec", "", id_gen.next())
-      for binding in bindings {
-        let (_, func) = binding
-        node.add_child(expr_to_tree(func.body, id_gen))
-      }
       node.add_child(expr_to_tree(body, id_gen))
       node
     }
@@ -388,6 +380,71 @@ fn expr_to_tree(expr : @syntax.Expr, id_gen : IdGenerator) -> TreeNode {
       node.add_child(expr_to_tree(body, id_gen))
       node
     }
+    ListComprehension(guard_~, body~, ..) => {
+      let node = TreeNode::new("ListComprehension", "", id_gen.next())
+      match guard_ {
+        Some(g) => node.add_child(expr_to_tree(g, id_gen))
+        None => ()
+      }
+      node.add_child(expr_to_tree(body, id_gen))
+      node
+    }
+    BytesInterp(elems~, ..) => {
+      let node = TreeNode::new("BytesInterp", "", id_gen.next())
+      for elem in elems {
+        match elem {
+          Expr(expr~, ..) => node.add_child(expr_to_tree(expr, id_gen))
+          _ => ()
+        }
+      }
+      node
+    }
+    LabelledBlock(body~, ..) => {
+      let node = TreeNode::new("LabelledBlock", "", id_gen.next())
+      node.add_child(expr_to_tree(body, id_gen))
+      node
+    }
+    LexScan(expr~, cases~, ..) => {
+      let node = TreeNode::new("LexScan", "", id_gen.next())
+      node.add_child(expr_to_tree(expr, id_gen))
+      for case in cases {
+        node.add_child(expr_to_tree(case.body, id_gen))
+      }
+      node
+    }
+    RevPipe(lhs~, rhs~, ..) => {
+      let node = TreeNode::new("RevPipe", "", id_gen.next())
+      node.add_child(expr_to_tree(lhs, id_gen))
+      node.add_child(expr_to_tree(rhs, id_gen))
+      node
+    }
+    Quantifier(body~, ..) => {
+      let node = TreeNode::new("Quantifier", "", id_gen.next())
+      node.add_child(expr_to_tree(body, id_gen))
+      node
+    }
+    Implies(lhs~, rhs~, ..) => {
+      let node = TreeNode::new("Implies", "", id_gen.next())
+      node.add_child(expr_to_tree(lhs, id_gen))
+      node.add_child(expr_to_tree(rhs, id_gen))
+      node
+    }
+    ProofAssert(expr~, ..) => {
+      let node = TreeNode::new("ProofAssert", "", id_gen.next())
+      node.add_child(expr_to_tree(expr, id_gen))
+      node
+    }
+    ProofLet(expr~, ..) => {
+      let node = TreeNode::new("ProofLet", "", id_gen.next())
+      node.add_child(expr_to_tree(expr, id_gen))
+      node
+    }
+    TemplateWriting(expr~, template~, ..) => {
+      let node = TreeNode::new("TemplateWriting", "", id_gen.next())
+      node.add_child(expr_to_tree(expr, id_gen))
+      node.add_child(expr_to_tree(template, id_gen))
+      node
+    }
     Pipe(lhs~, rhs~, ..) => {
       let node = TreeNode::new("Pipe", "", id_gen.next())
       node.add_child(expr_to_tree(lhs, id_gen))
@@ -426,14 +483,6 @@ fn expr_to_tree(expr : @syntax.Expr, id_gen : IdGenerator) -> TreeNode {
       let node = TreeNode::new("Continue", "", id_gen.next())
       for e in args {
         node.add_child(expr_to_tree(e, id_gen))
-      }
-      node
-    }
-    Loop(arg~, body~, ..) => {
-      let node = TreeNode::new("Loop", "", id_gen.next())
-      node.add_child(expr_to_tree(arg, id_gen))
-      for case in body {
-        node.add_child(expr_to_tree(case.body, id_gen))
       }
       node
     }

@@ -22,7 +22,7 @@ pub fn compute_edit_distance(
   tree2 : TreeNode,
   options : APTEDOptions,
 ) -> Double {
-  let memo : Map[Int64, Double] = {}
+  let memo : Map[Int64, Double] = Map([])
   compute_edit_distance_recursive(tree1, tree2, options, memo)
 }
 
@@ -80,7 +80,7 @@ fn compute_edit_distance_recursive(
   } else {
     options.rename_cost
   }
-  if not(node1.children.is_empty()) || not(node2.children.is_empty()) {
+  if !(node1.children.is_empty()) || !(node2.children.is_empty()) {
     // Pre-compute child distances into memo
     for child1 in node1.children {
       for child2 in node2.children {

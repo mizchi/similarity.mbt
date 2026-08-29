@@ -37,7 +37,7 @@ fn parse_worklist(contents : String) -> Array[String] {
     if line.length() == 0 {
       continue
     }
-    files.push(line.to_string())
+    files.push(line.to_owned())
   }
   files
 }
