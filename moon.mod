@@ -1,6 +1,6 @@
 name = "mizchi/similarity"
 
-version = "0.2.1"
+version = "0.2.2"
 
 import {
   "moonbitlang/parser@0.4.3",
