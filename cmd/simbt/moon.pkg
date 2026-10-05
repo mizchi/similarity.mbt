@@ -1,10 +1,11 @@
 import {
-  "mizchi/similarity/cli" @cli,
+  "mizchi/similarity/cli",
   "moonbitlang/async",
 }
 
+pkgtype(kind: "executable")
+
 options(
-  "is-main": true,
   targets: {
     "main.mbt": [ "native" ],
     "main_js.mbt": [ "js", "wasm", "wasm-gc" ],

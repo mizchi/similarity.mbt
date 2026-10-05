@@ -39,7 +39,7 @@ async fn find_mbt_files_git(result : Array[String]) -> Bool {
   let decoder = @encoding.decoder(UTF8)
   let output = decoder.decode_lossy(stdout.binary())
   for line in output.split("\n") {
-    let file = line.trim().to_string()
+    let file = line.trim().to_owned()
     if file.length() > 0 && file.has_suffix(".mbt") {
       // Only include files that exist (git ls-files may include deleted files)
       if @fs.path_exists(file) {
@@ -129,21 +129,21 @@ fn parse_args() -> Config? {
     } else if arg == "-t" || arg == "--threshold" {
       i = i + 1
       if i < args.length() {
-        threshold = @strconv.parse_double(args[i]) catch { _ => 0.8 }
+        threshold = @string.parse_double(args[i]) catch { _ => 0.8 }
       }
     } else if arg == "-w" || arg == "--workers" {
       i = i + 1
       if i < args.length() {
-        workers = @strconv.parse_int(args[i]) catch { _ => 4 }
+        workers = @string.parse_int(args[i]) catch { _ => 4 }
       }
     } else if arg == "-m" || arg == "--min-lines" {
       i = i + 1
       if i < args.length() {
-        min_lines = @strconv.parse_int(args[i]) catch { _ => 3 }
+        min_lines = @string.parse_int(args[i]) catch { _ => 3 }
       }
     } else if arg == "--no-tests" {
       no_tests = true
-    } else if not(arg.has_prefix("-")) {
+    } else if !arg.has_prefix("-") {
       files.push(arg)
     }
     i = i + 1
@@ -177,7 +177,7 @@ async fn discover_files(config : Config) -> Config {
     let files : Array[String] = []
     // Try git ls-files first (respects .gitignore)
     let git_success = find_mbt_files_git(files)
-    if not(git_success) || files.is_empty() {
+    if !git_success || files.is_empty() {
       // Fallback to directory traversal
       find_mbt_files(".", files)
     }
@@ -192,7 +192,7 @@ async fn discover_files(config : Config) -> Config {
       }
       filtered.push(file)
     }
-    Config::{ ..config, files: filtered }
+    Config::{ ..config, files: filtered, }
   } else {
     config
   }
@@ -228,13 +228,13 @@ fn print_help() -> Unit {
 fn run_worker_mode(file1 : String, file2 : String, threshold : Double) -> Unit {
   let source1 = @fs.read_file_to_string(file1) catch {
     e => {
-      println("Error reading \{file1}: \{e}")
+      println("Error reading \{file1}: \{@debug.to_string(e)}")
       return
     }
   }
   let source2 = @fs.read_file_to_string(file2) catch {
     e => {
-      println("Error reading \{file2}: \{e}")
+      println("Error reading \{file2}: \{@debug.to_string(e)}")
       return
     }
   }
@@ -264,7 +264,7 @@ fn run_worker_mode(file1 : String, file2 : String, threshold : Double) -> Unit {
       }
     }
   }
-  if not(found) {
+  if !found {
     println("NO_MATCHES")
   }
 }
@@ -278,7 +278,7 @@ fn analyze_single_file(
 ) -> Unit {
   let source = @fs.read_file_to_string(file) catch {
     e => {
-      println("Error reading \{file}: \{e}")
+      println("Error reading \{file}: \{@debug.to_string(e)}")
       return
     }
   }
@@ -323,12 +323,12 @@ async fn analyze_multiple_files(config : Config) -> Unit {
   let threshold_str = config.threshold.to_string()
 
   // Run workers in parallel with semaphore limiting concurrency
-  let results : Array[(Int, String, String)] = @async.with_task_group(fn(
+  let results : Array[(Int, String, String)] = @async.with_task_group(async fn(
     group,
   ) {
     let tasks = pairs.map(fn(pair) {
       let (file1, file2) = pair
-      group.spawn(fn() {
+      group.spawn(async fn() {
         semaphore.acquire()
         defer semaphore.release()
         run_worker(self_path, file1, file2, threshold_str)
@@ -348,7 +348,7 @@ async fn analyze_multiple_files(config : Config) -> Unit {
   for result in results {
     let (exit_code, stdout, stderr) = result
     if exit_code == 0 {
-      let output = stdout.trim().to_string()
+      let output = stdout.trim().to_owned()
       if output != "NO_MATCHES" && output.length() > 0 {
         println(output)
         // Count matches
@@ -385,7 +385,7 @@ pub async fn run_cli() -> Unit {
   if args.length() >= 5 && args[1] == "--internal-worker" {
     let file1 = args[2]
     let file2 = args[3]
-    let threshold = @strconv.parse_double(args[4]) catch { _ => 0.8 }
+    let threshold = @string.parse_double(args[4]) catch { _ => 0.8 }
     run_worker_mode(file1, file2, threshold)
     return
   }

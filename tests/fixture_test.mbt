@@ -5,24 +5,22 @@ fn parse_expectation(source : String) -> (Bool, Double) {
   // Default: expect similar at 0.8
   let lines = source.split("\n").collect()
   for line in lines {
-    let line_str = line.to_string()
+    let line_str = line.to_owned()
     if line_str.contains("// Expected:") {
       if line_str.contains("similarity >=") {
         // Extract threshold after ">="
         let parts = line_str.split(">=").collect()
         if parts.length() > 1 {
-          let threshold_str = parts[1].to_string().trim()
-          let threshold = @strconv.parse_double(threshold_str) catch {
-            _ => 0.8
-          }
+          let threshold_str = parts[1].trim()
+          let threshold = @string.parse_double(threshold_str) catch { _ => 0.8 }
           return (true, threshold) // expect_similar=true
         }
       } else if line_str.contains("no match") {
         // Parse "no match at threshold X.XX"
         let parts = line_str.split("threshold").collect()
         if parts.length() > 1 {
-          let threshold_str = parts[1].to_string().trim()
-          let threshold = @strconv.parse_double(threshold_str) catch {
+          let threshold_str = parts[1].trim()
+          let threshold = @string.parse_double(threshold_str) catch {
             _ => 0.85
           }
           return (false, threshold) // expect_similar=false
@@ -42,14 +40,14 @@ fn run_fixture_test(
   threshold : Double,
 ) -> Result[Unit, String] {
   let source = @fs.read_file_to_string(filepath) catch {
-    e => return Err("Failed to read \{filepath}: \{e}")
+    e => return Err("Failed to read \{filepath}: \{@debug.to_string(e)}")
   }
   // For "similar" tests, disable size_penalty to detect similar patterns
   // For "different" tests, enable size_penalty to avoid false positives
   let options : @similarity.DetectorOptions = {
     threshold,
     min_lines: 3,
-    size_penalty: not(expect_similar),
+    size_penalty: !expect_similar,
   }
   let results = @similarity.detect_similarities(source, options)
   if expect_similar {
@@ -72,9 +70,9 @@ fn run_fixture_test(
 
 ///|
 /// List files in a directory
-fn list_fixture_files(dir : String) -> Array[String] {
+fn list_fixture_files(dir : String) -> Array[String] raise {
   let files : Array[String] = []
-  let entries = @fs.read_dir(dir) catch { _ => return files }
+  let entries = @fs.read_dir(dir)
   for entry in entries {
     if entry.has_suffix(".mbt") {
       files.push("\{dir}/\{entry}")
@@ -87,10 +85,20 @@ fn list_fixture_files(dir : String) -> Array[String] {
 test "fixtures/similar - should detect similarities" {
   let dir = "tests/fixtures/similar"
   let files = list_fixture_files(dir)
+  assert_true(
+    !files.is_empty(),
+    msg="Fixture directory must not be empty: \{dir}",
+  )
   let mut all_passed = true
   let errors : Array[String] = []
   for filepath in files {
-    let source = @fs.read_file_to_string(filepath) catch { _ => continue }
+    let source = @fs.read_file_to_string(filepath)
+    let (_, reports) = @parser.parse_string(source)
+    assert_eq(reports.length(), 0, msg=filepath)
+    assert_true(
+      @similarity.extract_functions(source).length() >= 2,
+      msg=filepath,
+    )
     let (expect_similar, threshold) = parse_expectation(source)
     match run_fixture_test(filepath, expect_similar, threshold) {
       Ok(_) => ()
@@ -100,7 +108,7 @@ test "fixtures/similar - should detect similarities" {
       }
     }
   }
-  if not(all_passed) {
+  if !all_passed {
     for err in errors {
       println(err)
     }
@@ -112,10 +120,20 @@ test "fixtures/similar - should detect similarities" {
 test "fixtures/different - should not detect false positives" {
   let dir = "tests/fixtures/different"
   let files = list_fixture_files(dir)
+  assert_true(
+    !files.is_empty(),
+    msg="Fixture directory must not be empty: \{dir}",
+  )
   let mut all_passed = true
   let errors : Array[String] = []
   for filepath in files {
-    let source = @fs.read_file_to_string(filepath) catch { _ => continue }
+    let source = @fs.read_file_to_string(filepath)
+    let (_, reports) = @parser.parse_string(source)
+    assert_eq(reports.length(), 0, msg=filepath)
+    assert_true(
+      @similarity.extract_functions(source).length() >= 2,
+      msg=filepath,
+    )
     let (expect_similar, threshold) = parse_expectation(source)
     match run_fixture_test(filepath, expect_similar, threshold) {
       Ok(_) => ()
@@ -125,7 +143,7 @@ test "fixtures/different - should not detect false positives" {
       }
     }
   }
-  if not(all_passed) {
+  if !all_passed {
     for err in errors {
       println(err)
     }

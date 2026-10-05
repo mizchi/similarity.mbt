@@ -1,0 +1,46 @@
+name: MoonBit compatibility
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install latest MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Resolve dependencies
+        run: |
+          moon version --all
+          moon update
+      - name: Check formatting and all targets
+        run: |
+          moon fmt --check
+          moon check --target all
+      - name: Test library and fixtures on all targets
+        run: moon test --target all
+      - name: Build all targets
+        run: moon build --target all
+      - name: Test release CLI
+        run: |
+          make build
+          bash scripts/test-cli.sh
+          moon run cmd/simbt --target native -- --help
+      - name: Run non-native entrypoints
+        run: |
+          moon run cli --target js
+          moon run cmd/simbt --target js
+          moon run wasm_worker --target wasm
+          moon run wasm_worker --target wasm-gc

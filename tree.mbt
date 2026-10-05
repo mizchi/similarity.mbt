@@ -9,7 +9,7 @@ pub(all) struct TreeNode {
 
 ///|
 pub fn TreeNode::new(label : String, value : String, id : Int) -> TreeNode {
-  { label, value, children: [], id, cached_size: -1 }
+  { label, value, children: [], id, cached_size: -1, }
 }
 
 ///|
@@ -32,7 +32,7 @@ pub fn TreeNode::get_subtree_size(self : TreeNode) -> Int {
 }
 
 ///|
-pub impl Show for TreeNode with output(self, logger) {
+pub impl Show for TreeNode with fn output(self, logger) {
   logger.write_string("TreeNode(")
   logger.write_string(self.label)
   logger.write_string(", ")
@@ -54,3 +54,6 @@ pub fn TreeNode::finalize_labels(self : TreeNode) -> Unit {
     }
   }
 }
+
+///|
+pub extend TreeNode with Show::{to_string, output}
