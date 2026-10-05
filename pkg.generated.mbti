@@ -36,6 +36,8 @@ pub(all) struct FunctionInfo {
   end_line : Int
   tree : TreeNode
 }
+pub fn FunctionInfo::output(Self, &Logger) -> Unit
+pub fn FunctionInfo::to_string(Self) -> String
 pub impl Show for FunctionInfo
 
 pub(all) struct SimilarityResult {
@@ -44,6 +46,8 @@ pub(all) struct SimilarityResult {
   similarity : Double
   score : Double
 }
+pub fn SimilarityResult::output(Self, &Logger) -> Unit
+pub fn SimilarityResult::to_string(Self) -> String
 pub impl Show for SimilarityResult
 
 pub(all) struct TSEDOptions {
@@ -65,9 +69,10 @@ pub fn TreeNode::add_child(Self, Self) -> Unit
 pub fn TreeNode::finalize_labels(Self) -> Unit
 pub fn TreeNode::get_subtree_size(Self) -> Int
 pub fn TreeNode::new(String, String, Int) -> Self
+pub fn TreeNode::output(Self, &Logger) -> Unit
+pub fn TreeNode::to_string(Self) -> String
 pub impl Show for TreeNode
 
 // Type aliases
 
 // Traits
-

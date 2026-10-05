@@ -2,5 +2,7 @@ import {
   "moonbitlang/core/bench",
   "moonbitlang/core/cmp",
   "moonbitlang/parser",
+  "moonbitlang/parser/handrolled_parser",
+  "moonbitlang/lexer",
   "moonbitlang/parser/syntax",
 }

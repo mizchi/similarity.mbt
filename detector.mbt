@@ -7,7 +7,7 @@ pub(all) struct SimilarityResult {
 }
 
 ///|
-pub impl Show for SimilarityResult with output(self, logger) {
+pub impl Show for SimilarityResult with fn output(self, logger) {
   logger.write_string(self.func1.name)
   logger.write_string(" <-> ")
   logger.write_string(self.func2.name)
@@ -31,7 +31,7 @@ pub(all) struct DetectorOptions {
 
 ///|
 pub fn DetectorOptions::default() -> DetectorOptions {
-  { threshold: 0.88, min_lines: 3, size_penalty: true }
+  { threshold: 0.88, min_lines: 3, size_penalty: true, }
 }
 
 ///|
@@ -72,7 +72,7 @@ fn compare_functions(
   if similarity >= options.threshold {
     let avg_lines = (lines1 + lines2) / 2
     let score = similarity * avg_lines.to_double()
-    Some({ func1, func2, similarity, score })
+    Some({ func1, func2, similarity, score, })
   } else {
     None
   }
@@ -127,3 +127,6 @@ pub fn detect_cross_file_similarities(
   })
   results
 }
+
+///|
+pub extend SimilarityResult with Show::{to_string, output}

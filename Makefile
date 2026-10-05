@@ -5,7 +5,6 @@ BINDIR ?= $(PREFIX)/bin
 BINARY = similarity-mbt
 
 build:
-	moon install
 	moon build --release --target native cli/
 	cp _build/native/release/build/cli/cli.exe $(BINARY)
 

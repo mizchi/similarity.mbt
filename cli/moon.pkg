@@ -1,13 +1,17 @@
 import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+  "moonbitlang/core/debug",
   "mizchi/similarity" @lib,
-  "moonbitlang/x/fs" @fs,
-  "moonbitlang/x/encoding" @encoding,
+  "moonbitlang/x/fs",
+  "moonbitlang/x/encoding",
   "moonbitlang/async",
-  "moonbitlang/async/process" @process,
+  "moonbitlang/async/process",
 }
 
+pkgtype(kind: "executable")
+
 options(
-  "is-main": true,
   targets: {
     "main.mbt": [ "native" ],
     "main_js.mbt": [ "js", "wasm", "wasm-gc" ],
